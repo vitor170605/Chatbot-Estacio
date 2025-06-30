@@ -126,11 +126,22 @@ client.on('message', async msg => {
         return;
     }
 
-    // === Ignorar mensagens fora de contexto 
-    if (!['menu', 'pos-atendimento', 'avaliacao'].includes(estado) && !/^[1-9]$/.test(texto)) {
-        await client.sendMessage(user, 'Desculpa não entendi, certifique-se de escolher somente as seguintes opções.');
-        return;
+    // === Ignorar mensagens fora de contexto e repetir a pergunta correta
+if (!['menu', 'pos-atendimento', 'avaliacao'].includes(estado) && !/^[1-9]$/.test(texto)) {
+    await client.sendMessage(user, 'Desculpa não entendi, certifique-se de escolher somente as seguintes opções.');
+
+    // Repetir a pergunta ou menu com base no estado atual
+    if (estado === 'avaliacao') {
+        await client.sendMessage(user, 'Por favor, avalie o atendimento de 1 a 5, sendo 5 para ótimo.');
+    } else if (estado === 'pos-atendimento') {
+        await client.sendMessage(user, 'Deseja retornar ao menu inicial? (Responda com "Sim" ou "Não")');
+    } else if (estado === 'menu') {
+        await mostrarMenu(user);
     }
+
+    return;
+}
+
 
     // Se o usuário ainda não está no menu, bloquear seleção
     if (!['menu'].includes(estado) && /^[1-9]$/.test(texto)) {
@@ -170,17 +181,17 @@ client.on('message', async msg => {
                 await client.sendMessage(user, '📘 Questões acadêmicas? Fale com o coordenador ou a Secretaria.');
                 break;
             case '8':
-                await chat.sendStateTyping(); await delay(2000);
+                await chat.sendStateTyping(); await delay(8000);
                 await client.sendMessage(user, '💡Como acessar o SIA? Com o número de matrícula \n1. Acesse o endereço https://sia.estacio.br/sianet/logon.  \n2. Informe seu número de matrícula. Se você não souber ou tiver esquecido, clique na opção “Não sei ou esqueci minha Matrícula". \n3. Clique em "Esqueci minha senha/Cadastrar minha primeira senha";\n4. Siga as instruções que chegarão por e-mail.');
                 await chat.sendStateTyping(); await delay(8000);
                 await client.sendMessage(user, 'Veja como acessar o SIA apenas com seu e-mail de estudante:');
-                await chat.sendStateTyping(); await delay(3000);
-                await client.sendMessage(user, '1. Clique na opção “Entrar com o e-mail de estudante”.\n2. Informe o seu e-mail do estudante. Na Estácio, o e-mail do estudante tem o seguinte formato: número da matrícula + @alunos.estacio.br.\n3. Insira a sua senha padrão, que é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.');
-                await chat.sendStateTyping(); await delay(2000);
-                await delay(20000);
-                await client.sendMessage(user, 'Como acessar a SAVA Estácio ?\nVocê consegue acessar a Sala de Aula Virtual por diferentes caminhos: Link direto e pelo App Minha Estácio.\n1. App Minha Estácio: pelo aplicativo, você consegue acessar diretamente suas disciplinas matriculadas.\n2. Link Direto: basta acessar o link estudante.estacio.br/login e entrar na sua conta usando seu E-mail de Estudante e senha padrão.Em todos os caminhos você deve utilizar seu E-mail Estudante e a senha padrão para acessar a Sala de Aula Virtual.');
                 await chat.sendStateTyping(); await delay(8000);
-                await delay(10000);
+                await client.sendMessage(user, '1. Clique na opção “Entrar com o e-mail de estudante”.\n2. Informe o seu e-mail do estudante. Na Estácio, o e-mail do estudante tem o seguinte formato: número da matrícula + @alunos.estacio.br.\n3. Insira a sua senha padrão, que é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.');
+                await chat.sendStateTyping(); await delay(10000);
+                await delay(12000);
+                await client.sendMessage(user, 'Como acessar a SAVA Estácio ?\nVocê consegue acessar a Sala de Aula Virtual por diferentes caminhos: Link direto e pelo App Minha Estácio.\n1. App Minha Estácio: pelo aplicativo, você consegue acessar diretamente suas disciplinas matriculadas.\n2. Link Direto: basta acessar o link estudante.estacio.br/login e entrar na sua conta usando seu E-mail de Estudante e senha padrão.Em todos os caminhos você deve utilizar seu E-mail Estudante e a senha padrão para acessar a Sala de Aula Virtual.');
+                await chat.sendStateTyping(); await delay(12000);
+                await delay(12000);
                 await client.sendMessage(user, 'Lembrando que:\n\n> o e-mail de Estudante é formado pela #sua matricula# + @ + alunos.estacio.br \n> a senha padrão é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.\nEx: Caio, matrícula 20200000000, CPF 123.456.789-10. E-mail: 20200000000@alunos.estacio.br Senha: 123456@Ca');
                 break;
             case '9':
@@ -190,8 +201,8 @@ client.on('message', async msg => {
                 await client.sendMessage(user, 'Desculpe, essa opção não é válida. Por favor, escolha um número de 1 a 9.');
                 return;
         }
-        await chat.sendStateTyping(); await delay(7000);
-        await delay(9000);
+        await chat.sendStateTyping(); await delay(4000);
+        await delay(4000);
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
         userState.set(user, 'pos-atendimento');
     }
