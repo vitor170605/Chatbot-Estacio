@@ -1,12 +1,30 @@
 const qrcode = require('qrcode-terminal');
 const { Client } = require('whatsapp-web.js');
+const fs = require('fs');
 
 const client = new Client();
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 const userActivity = new Map();
 const userState = new Map();
+const caminhoAvaliacoes = './avaliacoes.json';
 
+// === Função para salvar avaliação =
+function salvarAvaliacao(user, nota) {
+    const dataAtual = new Date().toISOString();
+    const novaAvaliacao = { usuario: user, nota, data: dataAtual };
+
+    let avaliacoes = [];
+    if (fs.existsSync(caminhoAvaliacoes)) {
+        const dados = fs.readFileSync(caminhoAvaliacoes);
+        avaliacoes = JSON.parse(dados);
+    }
+
+    avaliacoes.push(novaAvaliacao);
+    fs.writeFileSync(caminhoAvaliacoes, JSON.stringify(avaliacoes, null, 2));
+}
+
+// === QR Code e Inicialização ===
 client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
 });
@@ -18,6 +36,7 @@ client.on('ready', () => {
 
 client.initialize();
 
+// === Controle de Atividade ===
 function registrarAtividade(user) {
     userActivity.set(user, Date.now());
 }
@@ -65,6 +84,7 @@ Selecione uma das opções abaixo para que possamos te auxiliar:
     userState.set(user, 'menu');
 }
 
+// === Lógica principal do chatbot ===
 client.on('message', async msg => {
     const texto = msg.body.trim();
     const chat = await msg.getChat();
@@ -76,6 +96,7 @@ client.on('message', async msg => {
     // === ETAPA: AVALIAÇÃO ===
     if (estado === 'avaliacao') {
         if (["1", "2", "3", "4"].includes(texto)) {
+            salvarAvaliacao(user, texto);
             await client.sendMessage(user, 'Agradecemos seu feedback! Atendimento encerrado. Quando precisar, só entrar em contato.');
             userState.delete(user);
         } else {
@@ -92,22 +113,26 @@ client.on('message', async msg => {
             await mostrarMenu(user);
         } else if (["não", "nao"].includes(texto.toLowerCase())) {
             userState.set(user, 'avaliacao');
-            await client.sendMessage(user,
-                'Antes de encerrarmos, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil'
-            );
+            await client.sendMessage(user, 'Antes de encerrarmos, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
         } else {
             await client.sendMessage(user, 'Por favor, responda com "Sim" ou "Não". Você precisa de mais alguma coisa?');
         }
         return;
     }
 
-    // === Somente entra no menu se estiver no estado 'menu' e enviar uma saudação ===
+    // === ETAPA: MENU ===
     if (estado === 'menu' && texto.match(/^(menu|oi|olá|ola|bom dia|boa tarde|boa noite)$/i)) {
         await mostrarMenu(user);
         return;
     }
 
-    // === Se usuário tenta escolher opção do menu fora do estado correto ===
+    // === Ignorar mensagens fora de contexto 
+    if (!['menu', 'pos-atendimento', 'avaliacao'].includes(estado) && !/^[1-9]$/.test(texto)) {
+        await client.sendMessage(user, 'Desculpa não entendi, certifique-se de escolher somente as seguintes opções.');
+        return;
+    }
+
+    // Se o usuário ainda não está no menu, bloquear seleção
     if (!['menu'].includes(estado) && /^[1-9]$/.test(texto)) {
         await client.sendMessage(user, 'Você ainda não pode escolher uma opção do menu. Por favor, conclua a etapa anterior.');
         return;
@@ -122,43 +147,34 @@ client.on('message', async msg => {
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.me/5521979190767');
                 break;
-
             case '2':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📚 PROUNI/FIES: fale com o focal da unidade:\nhttps://wa.me/5521983789869');
                 break;
-
             case '3':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '🎓 Informações no portal do aluno. Dúvidas? Fale com a Secretaria.');
                 break;
-
             case '4':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📄 Documentos devem ser solicitados no portal. Dificuldades? Fale com a Secretaria.');
                 break;
-
             case '5':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📆 A renovação de matrícula está disponível no portal. Problemas? Fale com a Secretaria.');
                 break;
-
             case '6':
                 await client.sendMessage(user, '💰 Dúvidas financeiras? Fale com o setor responsável: https://wa.me/8008806772');
                 break;
-
             case '7':
                 await client.sendMessage(user, '📘 Questões acadêmicas? Fale com o coordenador ou a Secretaria.');
                 break;
-
             case '8':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '💡Como acessar o SIA? Com o número de matrícula \n1. Acesse o endereço https://sia.estacio.br/sianet/logon.  \n2. Informe seu número de matrícula. Se você não souber ou tiver esquecido, clique na opção “Não sei ou esqueci minha Matrícula". \n3. Clique em "Esqueci minha senha/Cadastrar minha primeira senha";\n4. Siga as instruções que chegarão por e-mail.');
                 await chat.sendStateTyping(); await delay(8000);
-                await delay(8000);
                 await client.sendMessage(user, 'Veja como acessar o SIA apenas com seu e-mail de estudante:');
                 await chat.sendStateTyping(); await delay(3000);
-                await delay(4000);
                 await client.sendMessage(user, '1. Clique na opção “Entrar com o e-mail de estudante”.\n2. Informe o seu e-mail do estudante. Na Estácio, o e-mail do estudante tem o seguinte formato: número da matrícula + @alunos.estacio.br.\n3. Insira a sua senha padrão, que é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.');
                 await chat.sendStateTyping(); await delay(2000);
                 await delay(20000);
@@ -167,23 +183,16 @@ client.on('message', async msg => {
                 await delay(10000);
                 await client.sendMessage(user, 'Lembrando que:\n\n> o e-mail de Estudante é formado pela #sua matricula# + @ + alunos.estacio.br \n> a senha padrão é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.\nEx: Caio, matrícula 20200000000, CPF 123.456.789-10. E-mail: 20200000000@alunos.estacio.br Senha: 123456@Ca');
                 break;
-
             case '9':
                 await client.sendMessage(user, '📩 Dúvida fora da lista? Escreva sua dúvida que iremos encaminhar.');
                 break;
-
             default:
                 await client.sendMessage(user, 'Desculpe, essa opção não é válida. Por favor, escolha um número de 1 a 9.');
                 return;
         }
-
         await chat.sendStateTyping(); await delay(7000);
         await delay(9000);
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
         userState.set(user, 'pos-atendimento');
-        return;
     }
-
-    // === Tratamento de mensagens inesperadas fora do estado correto ===
-    await client.sendMessage(user, 'Desculpa, não entendi. Certifique-se de escolher somente as opções válidas indicadas. Por favor, repita sua resposta conforme as instruções.');
 });
