@@ -227,22 +227,45 @@ if (estado === 'menu' && !subestado) {
 
         switch (texto) {
             case '1':
-                await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '📘 Estágio - Instruções iniciais: \n1. Estágio Obrigatório: Se você está matriculado na disciplina de Estágio, compareça à Secretaria para iniciar o processo.\n2. Estágio Não Obrigatório: Para estagiar, é necessário estar com a matrícula ativa. Compareça à Secretaria com o Termo de Compromisso (TCE).')
+                  await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, '📘 Estágio - Instruções iniciais: \n1. Estágio Obrigatório: Disciplina obrigatória de acordo com a sua estrutura curricular do seu curso. Este estágio é realizado no Campus ou em Empresas Externas (públicas ou privadas)\n2. Estágio Não Obrigatório: Geralmente remunerado, realizado em Empresas Externas (públicas ou privadas).') 
+                await chat.sendStateTyping(); await delay(4000)
+                await client.sendMessage(user, 'Em ambos os casos, você deve abrir o requerimento no Portal do Aluno através do caminho: requerimento > novo > estágio > estágio obrigatório ou estágio não obrigatório.   ')
                     
-                await chat.sendStateTyping(); await delay(4000);
-                await client.sendMessage(user,'📌 Em ambos os casos, leve o TCE assinado para agilizarmos o atendimento.)');
+                    await chat.sendStateTyping(); await delay(8000);
+                    await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.me/5521979190767');
                 
-                await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.link/iesrtv');
-                break;
+                    break;
+                    
             case '2':await 
                 chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📚 PROUNI/FIES: fale com o focal da unidade:\nhttps://wa.link/w4towg');
                 break;
+            
+        
             case '3':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '🎓 Informações no portal do aluno. Dúvidas? Fale com a Secretaria.');
+                await client.sendMessage(user, '🎓 Colação -\nColação de Grau Oficial: É realizada de forma automática no Portal do Aluno após a conclusão de todas as disciplinas, horas de atividades complementar e aprovação de documentos obrigatórios para a Colação. ');
+                await chat.sendStateTyping(); await delay(3000);
+                await client.sendMessage(user, 'Solenidade Festiva: Realizada em parceria com a promove, verificar pacotes em: https://grupopromove.com.br/');
+                await chat.sendStateTyping(); await delay(4000);
+                await client.sendMessage(user, 'Colação de Grau Antecipada: Colação excepcional, soicitada antes da Colação de Grau Oficial em casos de aprovação em concurso público ou oferta de emprego imediata. Para solicitar esta colação compareça na Secretaria para abertura de requerimento.');
+                
+                await chat.sendStateTyping(); await delay(10000);
+                await client.sendMessage(user, 'Diplomas - \nDiploma Graduação - Graduação Tecnológica: Processado de forma automática e digital em até 60 dias úteis após Colação de Grau. Será enviado para seu e-mail e disponibilizado no Portal do Aluno.');
+                await chat.sendStateTyping(); await delay(3000);
+                await client.sendMessage(user, 'Diploma Curso Técnico: xxxxxxxxxxxx');
+                await chat.sendStateTyping(); await delay(3000);
+                await client.sendMessage(user, 'Diploma Pronatec: Solicitar emissão em atendimento presencial na Secretaria.')
+                await chat.sendStateTyping(); await delay(4000);
+                await client.sendMessage(user,'Diploma Pós Graduação: Processado em até 60 dias úteis após conclusão do curso (todos documentos devem estar aprovados para emissão do mesmo). Retirada de documento físico na Secretaria.');
+                await chat.sendStateTyping(); await delay(5000);
+                await client.sendMessage(user, ' OBS: Para verificar se possuem documentos pendentes verifique sua pasta de aluno no Portal do Aluno, no caminho: Pasta do Aluno > Meus Documentos > Documentos pessoais.'); 
+
+                await chat.sendStateTyping(); await delay(5000);
+                await client.sendMessage(user, 'Ainda ficou com dúvidas? Entre em contato com o focal: https://wa.link/o828yl');
+                
+                
                 break;
             case '4':
                 await chat.sendStateTyping(); await delay(2000);
