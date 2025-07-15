@@ -103,6 +103,7 @@ client.on('message', async msg => {
             await client.sendMessage(user, 'Agradecemos seu feedback! Atendimento encerrado. Quando precisar, só entrar em contato.');
             userState.delete(user);
             userSubState.delete(user);
+            userActivity.delete(user);
         } else {
             await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Por favor, responda com um número de 1 a 4 para avaliar o atendimento.');
@@ -120,6 +121,8 @@ client.on('message', async msg => {
             userState.set(user, 'avaliacao');
             await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Antes de encerrarmos, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
+            userActivity.delete(user); 
+
         } else {
             await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Por favor, responda com "Sim" ou "Não". Você precisa de mais alguma coisa?');
