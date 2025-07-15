@@ -66,7 +66,7 @@ async function mostrarMenu(user) {
 
     await delay(2000);
     await client.sendMessage(user,
-`Olá, ${primeiroNome}! 👋 Seja bem-vindo(a) ao atendimento virtual da Secretaria da Estácio Campus Barra Tom Jobim.
+        `Olá, ${primeiroNome}! 👋 Seja bem-vindo(a) ao atendimento virtual da Secretaria da Estácio Campus Barra Tom Jobim.
 
 Nosso atendimento com os focais dos processos funciona de segunda à sexta, das 10h às 20h.
 
@@ -99,10 +99,12 @@ client.on('message', async msg => {
     if (estado === 'avaliacao') {
         if (["1", "2", "3", "4"].includes(texto)) {
             salvarAvaliacao(user, texto);
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Agradecemos seu feedback! Atendimento encerrado. Quando precisar, só entrar em contato.');
             userState.delete(user);
             userSubState.delete(user);
         } else {
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Por favor, responda com um número de 1 a 4 para avaliar o atendimento.');
         }
         return;
@@ -116,53 +118,126 @@ client.on('message', async msg => {
             await mostrarMenu(user);
         } else if (["não", "nao"].includes(texto.toLowerCase())) {
             userState.set(user, 'avaliacao');
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Antes de encerrarmos, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
         } else {
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Por favor, responda com "Sim" ou "Não". Você precisa de mais alguma coisa?');
         }
         return;
     }
 
-    
-    // === MENSAGENS FORA DE CONTEXTO ===
-if (!['menu', 'avaliacao', 'pos-atendimento'].includes(estado)) {
-    const esperandoNumero = /^[1-9]$/.test(texto);
 
-    if (!esperandoNumero) {
-        if (subestado === 'outros') {
-            await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções abaixo:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
-        } else if (subestado === 'transferencias') {
-            await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções abaixo:\n\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
-        } else {
-            await client.sendMessage(user, 'Desculpa não entendi, certifique-se de escolher uma opção válida para a etapa atual.');
+    // === MENSAGENS FORA DE CONTEXTO ===
+    if (!['menu', 'avaliacao', 'pos-atendimento'].includes(estado)) {
+        const esperandoNumero = /^[1-9]$/.test(texto);
+
+        if (!esperandoNumero) {
+            if (subestado === 'outros') {
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções abaixo:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
+            } else if (subestado === 'transferencias') {
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções abaixo:\n\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
+            } else {
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Desculpa não entendi, certifique-se de escolher uma opção válida para a etapa atual.');
+            }
+            return;
         }
-        return;
     }
-}
 
 
     // === SUBMENUS de "Outros" ===
     if (estado === 'menu' && subestado === 'outros') {
         switch (texto) {
             case '1':
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, "Para realizar o trancamento/ cancelamento de matrícula é necessario ligar para '4003-6767' e agendar a sua entrevista de trancamento (entrevistas de trancamento não podem ser agendadas para o mesmo dia.)");
                 break;
             case '2':
-                await client.sendMessage(user, 'Para realizar alguma reclamação sobre algum serviço especifico favor envia-las para: ');
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Para realizar alguma reclamação sobre algum serviço específico favor envia-las para:https://wa.link/m2ajlx ');
                 break;
             case '3':
                 userSubState.set(user, 'transferencias');
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user,
                     'Transferência selecionada. Escolha uma das opções abaixo:\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
                 return;
             case '4':
-                await client.sendMessage(user, 'Não achou o que procurava? entre em contato com um de nossos focais: WA logo\nwa.link/6v5730');
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Não achou o que procurava? entre em contato com um de nossos focais: https://wa.link/ptr6ue');
                 break;
             case '5':
                 await mostrarMenu(user);
                 return;
             default:
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 5.');
+                return;
+        }
+        await chat.sendStateTyping(); await delay(2000);
+        await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
+        userState.set(user, 'pos-atendimento');
+        userSubState.delete(user);
+        return;
+    }
+    // === SUBMENU de Transferências ===
+    if (estado === 'menu' && subestado === 'transferencias') {
+        switch (texto) {
+            case '1':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Transferência Interna: Em breve mais informações.');
+                break;
+            case '2':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Transferência Externa: Em breve mais informações.');
+                break;
+            case '3':
+                userSubState.set(user, 'outros');
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user,
+                    'Você está de volta ao menu "Outros". Escolha uma das opções:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
+                return;
+            default:
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 3.');
+                return;
+        }
+        await chat.sendStateTyping(); await delay(2000);
+        await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
+        userState.set(user, 'pos-atendimento');
+        userSubState.delete(user);
+        return;
+    }
+
+    // === SUBMENU de Colação/Diplomas ===
+    if (estado === 'menu' && subestado === 'colacao_diplomas') {
+        switch (texto) {
+
+            case '1':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, '🎓 Colação -\nColação de Grau Oficial: É realizada de forma automática no Portal do Aluno após a conclusão de todas as disciplinas, horas de atividades complementar e aprovação de documentos obrigatórios para a Colação.');
+                await chat.sendStateTyping(); await delay(3000);
+                await client.sendMessage(user, 'Solenidade Festiva: \nRealizada em parceria com a promove, verificar pacotes em: https://grupopromove.com.br/');
+                await chat.sendStateTyping(); await delay(4000);
+                await client.sendMessage(user, 'Colação de Grau Antecipada: \nColação excepcional, solicitada antes da Colação de Grau Oficial em casos de aprovação em concurso público ou oferta de emprego imediata. Para solicitar esta colação compareça na Secretaria para abertura de requerimento.');
+                await chat.sendStateTyping(); await delay(5000);
+                await client.sendMessage(user, 'Ainda ficou com dúvidas? Entre em contato com o focal: https://wa.link/o828yl');
+                break;
+            case '2':
+                userSubState.set(user, 'diplomas');
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user,
+                    'Diplomas selecionado. Escolha uma das opções abaixo:\n\n1 - Diplomas Graduação\n2 - Diplomas Pós-graduação\n3 - Diplomas Pronatec\n4 - Diplomas Curso Técnico\n5 - Voltar ');
+                return;
+            case '3':
+                await mostrarMenu(user);
+                return;
+            default:
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 3.');
                 return;
         }
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
@@ -170,103 +245,106 @@ if (!['menu', 'avaliacao', 'pos-atendimento'].includes(estado)) {
         userSubState.delete(user);
         return;
     }
-    // === SUBMENU de Transferências ===
-if (estado === 'menu' && subestado === 'transferencias') {
-    switch (texto) {
-        case '1':
-            await client.sendMessage(user, 'Transferência Interna: Em breve mais informações.');
-            break;
-        case '2':
-            await client.sendMessage(user, 'Transferência Externa: Em breve mais informações.');
-            break;
-        case '3':
-            userSubState.set(user, 'outros');
-            await client.sendMessage(user,
-                'Você está de volta ao menu "Outros". Escolha uma das opções:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
-            return;
-        default:
-            await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 3.');
-            return;
-    }
-    await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
-    userState.set(user, 'pos-atendimento');
-    userSubState.delete(user);
-    return;
-}
 
-
-// === Mensagens como "oi", "olá", etc. ===
-if (texto.match(/^(menu|oi|olá|ola|bom dia|boa tarde|boa noite)$/i)) {
-    const estadoAtual = userState.get(user);
-    const subestadoAtual = userSubState.get(user);
-
-    if (!estadoAtual) {
-        await mostrarMenu(user);
+    // === SUBMENU de Diplomas ===
+    if (estado === 'menu' && subestado === 'diplomas') {
+        switch (texto) {
+            case '1':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Diplomas Graduação / Graduação Tecnológica:\nProcessado de forma automática e digital em até 60 dias úteis após Colação de Grau. Será enviado para seu e-mail e disponibilizado no Portal do Aluno.');
+                break;
+            case '2':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Diploma Pós Graduação: \nProcessado em até 60 dias úteis após conclusão do curso (todos documentos devem estar aprovados para emissão do mesmo). Retirada de documento físico na Secretaria.');
+                break;
+            case '3':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Diplomas Pronatec: \nSolicitar emissão em atendimento presencial na Secretaria.');
+                break;
+            case '4':
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Diplomas Curso Técnico: \nComparecer a Secretaria com: Identidade, CPF, Comprovante de conclusão do ensino médio(Diploma ou certificado frente e verso e Histórico Escolar) Certidão de Nascimento ou Casamento. Para realizar a emissão do mesmo');
+                break;
+            case '5':
+                userSubState.set(user, 'colacao_diplomas');
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user,
+                    'Você voltou para "Colação de Grau / Diplomas". Escolha:\n\n1 - Colação de Grau\n2 - Diplomas\n3 - Voltar');
+                return;
+            default:
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 5.');
+                return;
+        }
+        await chat.sendStateTyping(); await delay(2000);
+        await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
+        userState.set(user, 'pos-atendimento');
+        userSubState.delete(user);
         return;
     }
 
-    if (subestadoAtual === 'outros') {
-        await client.sendMessage(user,
-            'Você está em "Outros". Escolha uma das opções:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
-    } else if (subestadoAtual === 'transferencias') {
-        await client.sendMessage(user,
-            'Você está em "Transferências". Escolha:\n\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
-    } else if (estadoAtual === 'avaliacao') {
-        await client.sendMessage(user, 'Por favor, responda com um número de 1 a 4 para avaliar o atendimento.');
-    } else if (estadoAtual === 'pos-atendimento') {
-        await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
-    } else {
-        await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções válidas para continuar.');
+
+    // === Mensagens como "oi", "olá", etc. ===
+    if (texto.match(/^(menu|oi|olá|ola|bom dia|boa tarde|boa noite)$/i)) {
+        const estadoAtual = userState.get(user);
+        const subestadoAtual = userSubState.get(user);
+
+        if (!estadoAtual) {
+            await mostrarMenu(user);
+            return;
+        }
+
+        if (subestadoAtual === 'outros') {
+            await chat.sendStateTyping(); await delay(2000);
+            await client.sendMessage(user,
+                'Você está em "Outros". Escolha uma das opções:\n\n1 - Trancamento/Cancelamento de matrícula\n2 - Abrir uma reclamação\n3 - Transferências\n4 - Não achou o que procurava?\n5 - Voltar');
+        } else if (subestadoAtual === 'transferencias') {
+            await chat.sendStateTyping(); await delay(2000);
+            await client.sendMessage(user,
+                'Você está em "Transferências". Escolha:\n\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
+        } else if (estadoAtual === 'avaliacao') {
+            await client.sendMessage(user, 'Por favor, responda com um número de 1 a 4 para avaliar o atendimento.');
+        } else if (estadoAtual === 'pos-atendimento') {
+            await chat.sendStateTyping(); await delay(2000);
+            await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
+        } else {
+            await chat.sendStateTyping(); await delay(2000);
+            await client.sendMessage(user, 'Desculpa não entendi. Escolha uma das opções válidas para continuar.');
+        }
+        return;
     }
-    return;
-}
 
 
     // === MENU PRINCIPAL: Ações ===
-if (estado === 'menu' && !subestado) {
+    if (estado === 'menu' && !subestado) {
 
         switch (texto) {
             case '1':
-                  await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '📘 Estágio - Instruções iniciais: \n1. Estágio Obrigatório: Disciplina obrigatória de acordo com a sua estrutura curricular do seu curso. Este estágio é realizado no Campus ou em Empresas Externas (públicas ou privadas)\n2. Estágio Não Obrigatório: Geralmente remunerado, realizado em Empresas Externas (públicas ou privadas).') 
+                await chat.sendStateTyping(); await delay(2000);
+                await client.sendMessage(user, '📘 Estágio - Instruções iniciais: \n1. Estágio Obrigatório: Disciplina obrigatória de acordo com a sua estrutura curricular do seu curso. Este estágio é realizado no Campus ou em Empresas Externas (públicas ou privadas)\n2. Estágio Não Obrigatório: Geralmente remunerado, realizado em Empresas Externas (públicas ou privadas).')
                 await chat.sendStateTyping(); await delay(4000)
                 await client.sendMessage(user, 'Em ambos os casos, você deve abrir o requerimento no Portal do Aluno através do caminho: requerimento > novo > estágio > estágio obrigatório ou estágio não obrigatório.   ')
-                    
-                    await chat.sendStateTyping(); await delay(8000);
-                    await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.me/5521979190767');
-                
-                    break;
-                    
-            case '2':await 
+
+                await chat.sendStateTyping(); await delay(8000);
+                await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.link/j0f1fm');
+
+                break;
+
+            case '2': await
                 chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📚 PROUNI/FIES: fale com o focal da unidade:\nhttps://wa.link/w4towg');
                 break;
-            
-        
+
+
             case '3':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '🎓 Colação -\nColação de Grau Oficial: É realizada de forma automática no Portal do Aluno após a conclusão de todas as disciplinas, horas de atividades complementar e aprovação de documentos obrigatórios para a Colação. ');
-                await chat.sendStateTyping(); await delay(3000);
-                await client.sendMessage(user, 'Solenidade Festiva: Realizada em parceria com a promove, verificar pacotes em: https://grupopromove.com.br/');
-                await chat.sendStateTyping(); await delay(4000);
-                await client.sendMessage(user, 'Colação de Grau Antecipada: Colação excepcional, soicitada antes da Colação de Grau Oficial em casos de aprovação em concurso público ou oferta de emprego imediata. Para solicitar esta colação compareça na Secretaria para abertura de requerimento.');
-                
-                await chat.sendStateTyping(); await delay(10000);
-                await client.sendMessage(user, 'Diplomas - \nDiploma Graduação - Graduação Tecnológica: Processado de forma automática e digital em até 60 dias úteis após Colação de Grau. Será enviado para seu e-mail e disponibilizado no Portal do Aluno.');
-                await chat.sendStateTyping(); await delay(3000);
-                await client.sendMessage(user, 'Diploma Curso Técnico: xxxxxxxxxxxx');
-                await chat.sendStateTyping(); await delay(3000);
-                await client.sendMessage(user, 'Diploma Pronatec: Solicitar emissão em atendimento presencial na Secretaria.')
-                await chat.sendStateTyping(); await delay(4000);
-                await client.sendMessage(user,'Diploma Pós Graduação: Processado em até 60 dias úteis após conclusão do curso (todos documentos devem estar aprovados para emissão do mesmo). Retirada de documento físico na Secretaria.');
-                await chat.sendStateTyping(); await delay(5000);
-                await client.sendMessage(user, ' OBS: Para verificar se possuem documentos pendentes verifique sua pasta de aluno no Portal do Aluno, no caminho: Pasta do Aluno > Meus Documentos > Documentos pessoais.'); 
+                await client.sendMessage(user, 'OBS: Para verificar se possuem documentos pendentes verifique sua pasta de aluno no Portal do Aluno, no caminho: Pasta do Aluno > Meus Documentos > Documentos pessoais.')
+                await chat.sendStateTyping(); await delay(2000)
+                await client.sendMessage(user, 'Você escolheu "Colação de Grau / Diplomas". Selecione uma das opções abaixo:\n\n1 - Colação de Grau\n2 - Diplomas\n3 - Voltar');
+                userSubState.set(user, 'colacao_diplomas');
+                return;
 
-                await chat.sendStateTyping(); await delay(5000);
-                await client.sendMessage(user, 'Ainda ficou com dúvidas? Entre em contato com o focal: https://wa.link/o828yl');
-                
-                
-                break;
+
             case '4':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📄 Documentos devem ser solicitados no portal. Dificuldades? Fale com a Secretaria.');
@@ -276,10 +354,11 @@ if (estado === 'menu' && !subestado) {
                 await client.sendMessage(user, '📆 A renovação de matrícula está disponível no portal. Problemas? Fale com a Secretaria.');
                 break;
             case '6':
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '💰 Dúvidas financeiras? Fale com o setor responsável: https://wa.me/8008806772');
                 break;
             case '7':
-                await chat.sendStateTyping(); await delay(2000);    
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '📘 Questões acadêmicas? Fale com o coordenador ou a Secretaria.');
                 break;
             case '8':
@@ -298,6 +377,7 @@ if (estado === 'menu' && !subestado) {
                 break;
             case '9':
                 userSubState.set(user, 'outros');
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user,
                     '🔍 Você escolheu "Outros". Selecione uma das opções abaixo:\n\n' +
                     '1 - Trancamento/Cancelamento de matrícula\n' +
@@ -307,6 +387,7 @@ if (estado === 'menu' && !subestado) {
                     '5 - Voltar');
                 return;
             default:
+                await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, 'Desculpe, essa opção não é válida. Por favor, escolha um número de 1 a 9.');
                 return;
         }
@@ -314,5 +395,10 @@ if (estado === 'menu' && !subestado) {
         await delay(5000);
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
         userState.set(user, 'pos-atendimento');
+    }
+    // === Qualquer outra mensagem fora de fluxo (antes ou depois do atendimento) ===
+    if (!userState.has(user)) {
+        await mostrarMenu(user);
+        return;
     }
 });
