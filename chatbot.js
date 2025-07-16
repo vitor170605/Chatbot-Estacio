@@ -64,7 +64,7 @@ async function mostrarMenu(user) {
     const name = contact.pushname || 'Aluno(a)';
     const primeiroNome = name.split(" ")[0];
 
-    await chat.sendStateTyping(); await delay(2000);
+    
     await client.sendMessage(user,
         `Olá, ${primeiroNome}! 👋 Seja bem-vindo(a) ao atendimento virtual da Secretaria da Estácio Campus Barra Tom Jobim.
 
