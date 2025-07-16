@@ -49,7 +49,6 @@ async function verificarInatividade() {
 
         if (tempoInativo >= 10 * 60000) {
             await client.sendMessage(user, 'Encerramos seu atendimento devido à inatividade. Caso precise de algo, digite "oi" para reiniciar.');
-            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Antes de encerrar completamente, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
             userActivity.delete(user);
             userState.set(user, 'avaliacao');
