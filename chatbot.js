@@ -42,14 +42,14 @@ function registrarAtividade(user) {
     userActivity.set(user, Date.now());
 }
 
-async function verificarInatividade() {
+async function verificarInatividade() {   
     const agora = Date.now();
     for (const [user, timestamp] of userActivity.entries()) {
         const tempoInativo = agora - timestamp;
 
         if (tempoInativo >= 10 * 60000) {
-            await client.sendMessage(user, 'Encerramos seu atendimento devido à inatividade. Caso precise de algo, digite "menu" para reiniciar.');
-            await delay(2000);
+            await client.sendMessage(user, 'Encerramos seu atendimento devido à inatividade. Caso precise de algo, digite "oi" para reiniciar.');
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Antes de encerrar completamente, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
             userActivity.delete(user);
             userState.set(user, 'avaliacao');
@@ -64,7 +64,7 @@ async function mostrarMenu(user) {
     const name = contact.pushname || 'Aluno(a)';
     const primeiroNome = name.split(" ")[0];
 
-    await delay(2000);
+    await chat.sendStateTyping(); await delay(2000);
     await client.sendMessage(user,
         `Olá, ${primeiroNome}! 👋 Seja bem-vindo(a) ao atendimento virtual da Secretaria da Estácio Campus Barra Tom Jobim.
 
@@ -114,14 +114,15 @@ client.on('message', async msg => {
     // === ETAPA: PÓS-ATENDIMENTO ===
     if (estado === 'pos-atendimento') {
         if (texto.toLowerCase() === 'sim') {
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Perfeito! Retornando ao menu principal...');
-            await delay(1500);
+            await delay(1000);
             await mostrarMenu(user);
         } else if (["não", "nao"].includes(texto.toLowerCase())) {
             userState.set(user, 'avaliacao');
             await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Antes de encerrarmos, por favor, avalie o quanto o atendimento foi útil para você (responda com um número):\n\n1 - Muito útil\n2 - Útil\n3 - Pouco útil\n4 - Nada útil');
-            userActivity.delete(user); 
+            userActivity.delete(user);
 
         } else {
             await chat.sendStateTyping(); await delay(2000);
@@ -191,11 +192,12 @@ client.on('message', async msg => {
         switch (texto) {
             case '1':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, 'Transferência Interna: Em breve mais informações.');
+                await client.sendMessage(user, 'Transferência Interna:\nPara realizar a transferência interna entre Campus da Estácio, acesse o SIA, pelo site ou pelo APP Aluno, (atendimento/requerimento/requerimento novo) e escolha a opção desejada, ou faça um atendimento presencial na Secretaria do Campus de destino.')
+
                 break;
             case '2':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, 'Transferência Externa: Em breve mais informações.');
+                await client.sendMessage(user, 'Transferência Externa:\nPara transferência externa providenciar na sua instituição de ensino O Plano de Ensino (ementa), o histórico acadêmico com status de Trancado ou Transferência, RG, CPF e Certificado do ensino Médio');
                 break;
             case '3':
                 userSubState.set(user, 'outros');
@@ -243,6 +245,7 @@ client.on('message', async msg => {
                 await client.sendMessage(user, 'Opção inválida. Por favor, escolha de 1 a 3.');
                 return;
         }
+        await chat.sendStateTyping(); await delay(2000);
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
         userState.set(user, 'pos-atendimento');
         userSubState.delete(user);
@@ -306,6 +309,7 @@ client.on('message', async msg => {
             await client.sendMessage(user,
                 'Você está em "Transferências". Escolha:\n\n1 - Transferência Interna\n2 - Transferência Externa\n3 - Voltar');
         } else if (estadoAtual === 'avaliacao') {
+            await chat.sendStateTyping(); await delay(2000);
             await client.sendMessage(user, 'Por favor, responda com um número de 1 a 4 para avaliar o atendimento.');
         } else if (estadoAtual === 'pos-atendimento') {
             await chat.sendStateTyping(); await delay(2000);
@@ -328,7 +332,7 @@ client.on('message', async msg => {
                 await chat.sendStateTyping(); await delay(4000)
                 await client.sendMessage(user, 'Em ambos os casos, você deve abrir o requerimento no Portal do Aluno através do caminho: requerimento > novo > estágio > estágio obrigatório ou estágio não obrigatório.   ')
 
-                await chat.sendStateTyping(); await delay(8000);
+                await chat.sendStateTyping(); await delay(6000);
                 await client.sendMessage(user, 'Ainda esta com dúvidas?📲 Fale com o Focal: https://wa.link/j0f1fm');
 
                 break;
@@ -350,11 +354,11 @@ client.on('message', async msg => {
 
             case '4':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '📄 Documentos devem ser solicitados no portal. Dificuldades? Fale com a Secretaria.');
+                await client.sendMessage(user, '📄Declarações/Documentos: \nPara solicitação de declaração ou para postagens de documentos, acesse o SIA, pelo site ou pelo APP Aluno (atendimento/requerimento/requerimento novo) e escolha a opção desejada ');
                 break;
             case '5':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '📆 A renovação de matrícula está disponível no portal. Problemas? Fale com a Secretaria.');
+                await client.sendMessage(user, '📆 Renovação de Matrícula: \nPara renovar acesse o Renova da Estácio https://renovaestacio.estacio.br/ ou faça um atendimento presencial na Secretaria do Campus.');
                 break;
             case '6':
                 await chat.sendStateTyping(); await delay(2000);
@@ -362,19 +366,19 @@ client.on('message', async msg => {
                 break;
             case '7':
                 await chat.sendStateTyping(); await delay(2000);
-                await client.sendMessage(user, '📘 Questões acadêmicas? Fale com o coordenador ou a Secretaria.');
+                await client.sendMessage(user, '📘Questões acadêmicas: \nConsultar no seu SIA, as Informações Acadêmicas, ou fazer um atendimento presencial na Coordenação Acadêmica no Campus, acessar pela Secretaria.');
                 break;
             case '8':
                 await chat.sendStateTyping(); await delay(2000);
                 await client.sendMessage(user, '💡Como acessar o SIA? Com o número de matrícula \n1. Acesse o endereço https://sia.estacio.br/sianet/logon.  \n2. Informe seu número de matrícula. Se você não souber ou tiver esquecido, clique na opção “Não sei ou esqueci minha Matrícula". \n3. Clique em "Esqueci minha senha/Cadastrar minha primeira senha";\n4. Siga as instruções que chegarão por e-mail.');
-                await chat.sendStateTyping(); await delay(8000);
+                await chat.sendStateTyping(); await delay(6000);
                 await client.sendMessage(user, 'Veja como acessar o SIA apenas com seu e-mail de estudante:');
-                await chat.sendStateTyping(); await delay(8000);
+                await chat.sendStateTyping(); await delay(6000);
                 await client.sendMessage(user, '1. Clique na opção “Entrar com o e-mail de estudante”.\n2. Informe o seu e-mail do estudante. Na Estácio, o e-mail do estudante tem o seguinte formato: número da matrícula + @alunos.estacio.br.\n3. Insira a sua senha padrão, que é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.');
-                await chat.sendStateTyping(); await delay(10000);
+                await chat.sendStateTyping(); await delay(8000);
                 await delay(10000);
                 await client.sendMessage(user, 'Como acessar a SAVA Estácio ?\nVocê consegue acessar a Sala de Aula Virtual por diferentes caminhos: Link direto e pelo App Minha Estácio.\n1. App Minha Estácio: pelo aplicativo, você consegue acessar diretamente suas disciplinas matriculadas.\n2. Link Direto: basta acessar o link estudante.estacio.br/login e entrar na sua conta usando seu E-mail de Estudante e senha padrão.Em todos os caminhos você deve utilizar seu E-mail Estudante e a senha padrão para acessar a Sala de Aula Virtual.');
-                await chat.sendStateTyping(); await delay(10000);
+                await chat.sendStateTyping(); await delay(8000);
                 await delay(10000);
                 await client.sendMessage(user, 'Lembrando que:\n\n> o e-mail de Estudante é formado pela #sua matricula# + @ + alunos.estacio.br \n> a senha padrão é composta pelos seis primeiros dígitos do seu CPF + @ + as duas primeiras letras do seu nome, sendo a primeira maiúscula e a segunda minúscula.\nEx: Caio, matrícula 20200000000, CPF 123.456.789-10. E-mail: 20200000000@alunos.estacio.br Senha: 123456@Ca');
                 break;
@@ -395,7 +399,7 @@ client.on('message', async msg => {
                 return;
         }
 
-        await delay(5000);
+         await chat.sendStateTyping(); await delay(4000);
         await client.sendMessage(user, 'Você precisa de mais alguma coisa? (Responda com "Sim" ou "Não")');
         userState.set(user, 'pos-atendimento');
     }
